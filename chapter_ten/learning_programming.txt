@@ -1,0 +1,1 @@
+I'm learning rust because it's cool. I've learned a lot about lists, dicts, sets and tuples. 
