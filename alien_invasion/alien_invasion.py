@@ -1,5 +1,6 @@
 import sys
 from time import sleep
+from button import Button
 
 import pygame
 from settings import Settings
@@ -31,7 +32,10 @@ class AlienInvasion:
         self._create_aliens()
 
         # Start alien invasion in an active state
-        self.game_active = True
+        self.game_active = False
+
+        # Make the play button
+        self.play_button = Button(self, "Play")
 
     def run_game(self):
         """Start the main loop for the game"""
@@ -65,6 +69,31 @@ class AlienInvasion:
                         self.fighter.moving_right = False
                     elif event.key == pygame.K_LEFT:
                         self.fighter.moving_left = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    self._check_play_button(mouse_pos)
+    
+    def _check_play_button(self, mouse_pos):
+        """Start a new game when the player clicks play"""
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked and self.play_button.rect.collidepoint(mouse_pos):
+            # Reset the game settings
+            self.settings.initialize_dynamic_settings()
+
+            # Reset the game stats
+            self.stats.reset_stats()
+            self.game_active = True
+
+            # Get rid of bullets and aliens
+            self.bullets.empty()
+            self.aliens.empty()
+
+            # Create a new fleet and center the ship
+            self._create_aliens()
+            self.fighter.center_ship()
+
+            # Hide the mouse cursor
+            pygame.mouse.set_visible(False)
 
     def _fire_bullet(self):
         """Create a new bullet and add it to the bullets group"""
@@ -95,6 +124,7 @@ class AlienInvasion:
         if not self.aliens:
             self.bullets.empty()
             self._create_aliens()
+            self.settings.increase_speed()
 
     def _create_aliens(self):
         """Create the fleet of aliens"""
@@ -140,6 +170,10 @@ class AlienInvasion:
         self.fighter.blitme()
         self.aliens.draw(self.screen)
 
+        # Draw the button if game is inactive
+        if not self.game_active:
+            self.play_button.draw_button()
+
         pygame.display.flip()
 
     def _update_aliens(self):
@@ -180,6 +214,7 @@ class AlienInvasion:
             sleep(0.5)
         else:
             self.game_active = False
+            pygame.mouse.set_visible(True)
 
 if __name__ == '__main__':
     ai = AlienInvasion()
