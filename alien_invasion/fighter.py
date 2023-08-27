@@ -1,10 +1,12 @@
 import pygame
+from pygame.sprite import Sprite
 
-class Fighter:
+class Fighter(Sprite):
     """Class to manage the fighter"""
 
     def __init__(self, game):
         """Initialize the fighter bitmap"""
+        super().__init__()
         self.screen = game.screen
         self.settings = game.settings
         self.screen_rect = game.screen.get_rect()

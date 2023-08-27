@@ -8,6 +8,7 @@ from game_stats import GameStats
 from fighter import Fighter
 from bullet import Bullet
 from alien import Alien
+from scoreboard import Scoreboard
 
 class AlienInvasion:
     """Overall class to manage game assets and behavior"""
@@ -24,6 +25,7 @@ class AlienInvasion:
 
         # Create an instance to store game stats
         self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
 
         self.fighter = Fighter(self)
         self.bullets = pygame.sprite.Group()
@@ -82,6 +84,9 @@ class AlienInvasion:
 
             # Reset the game stats
             self.stats.reset_stats()
+            self.sb.prep_score()
+            self.sb.prep_level()
+            self.sb.prep_fighters()
             self.game_active = True
 
             # Get rid of bullets and aliens
@@ -121,10 +126,20 @@ class AlienInvasion:
             self.bullets, self.aliens, False, True
         )
 
+        if collisions:
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
+            self.sb.prep_score()
+            self.sb.check_high_score()
+
         if not self.aliens:
             self.bullets.empty()
             self._create_aliens()
             self.settings.increase_speed()
+
+            # Increase level
+            self.stats.level += 1
+            self.sb.prep_level()
 
     def _create_aliens(self):
         """Create the fleet of aliens"""
@@ -170,6 +185,9 @@ class AlienInvasion:
         self.fighter.blitme()
         self.aliens.draw(self.screen)
 
+        # Draw the score information
+        self.sb.show_score()
+
         # Draw the button if game is inactive
         if not self.game_active:
             self.play_button.draw_button()
@@ -202,6 +220,7 @@ class AlienInvasion:
         if self.stats.ships_left > 0:
             # Decrement ships left
             self.stats.ships_left -= 1
+            self.sb.prep_fighters()
 
             # Get rid of any remaining bullets and aliens
             self.bullets.empty()
